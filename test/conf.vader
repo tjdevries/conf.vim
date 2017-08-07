@@ -1,0 +1,116 @@
+Execute (Test setting & getting a name):
+  let config = {}
+  call conf#set_name(config, 'vader_test')
+  AssertEqual 'vader_test', conf#get_name(config)
+
+Execute (Test adding an area and then setting):
+  let config = {}
+  call conf#set_name(config, 'vader_test')
+  call conf#add_area(config, 'test_area')
+
+  " Successful add, just default value
+  call conf#add_setting(config, 'test_area', 'test_setting', 10)
+
+  " Not successful addition
+  " test_arena != test_area
+  try
+    call conf#add_setting(config, 'test_arena', 'test_setting', 10)
+    Assert v:false, "Add setting should have thrown an error"
+  catch
+    Assert match(v:exception, '[CONF][vader_test] No setting area named: test_arena'), "No match was found"
+  endtry
+
+Execute (Test adding a dict as a default value):
+  let config = {}
+  call conf#set_name(config, 'vader_test')
+  call conf#add_area(config, 'test_area')
+
+  " Successful add dictionary default
+  call conf#add_setting(config, 'test_area', 'test_dict', {'val': 'key'})
+  AssertEqual {'val': 'key'}, conf#get_setting(config, 'test_area', 'test_dict')
+
+  " Should error if you try it again
+  AssertThrows call conf#add_setting(config, 'test_area', 'test_dict', {'val': 'key'})
+
+  try
+    call conf#get_setting(config, 'test_not_an_area', 'test_dict')
+    Assert v:false, "get_setting should have thrown an error"
+  catch
+    Assert match(v:exception, "[CONF][vader_test]: 'test_not_an_area' is not a valid area")
+  endtry
+
+Execute (Test adding a true configuration dictionary):
+  let config = {}
+  call conf#set_name(config, 'vader_test')
+  call conf#add_area(config, 'test_area')
+
+  " Successful add dictionary default
+  call conf#add_setting(config, 'test_area', 'test_string', {
+      \ 'type': v:t_string,
+      \ 'default': 'foobar',
+      \ })
+  AssertEqual 'foobar', conf#get_setting(config, 'test_area', 'test_string')
+
+  " Throw an error
+  try
+    call conf#set_setting(config, 'test_area', 'test_string', 5)
+    Assert v:false, "set_setting should have thrown an error"
+  catch
+    Assert match(v:exception, "[CONF][vader_test][set.TYPE]")
+  endtry
+
+  call conf#set_setting(config, 'test_area', 'test_string', 'hello world')
+  AssertEqual 'hello world', conf#get_setting(config, 'test_area', 'test_string')
+
+Execute (Test adding a value with a validator):
+  let config = {}
+  call conf#set_name(config, 'vader_test')
+  call conf#add_area(config, 'test_area')
+
+  " Successful add dictionary default
+  call conf#add_setting(config, 'test_area', 'test_number', {
+      \ 'type': v:t_number,
+      \ 'default': 25,
+      \ 'validator': {val -> val > 20},
+      \ })
+  AssertEqual 25, conf#get_setting(config, 'test_area', 'test_number')
+
+  " throw an error for not putting in a high enough number
+  try
+    call conf#set_setting(config, 'test_area', 'test_number', 15)
+    Assert v:false, "set_setting should have thrown an error"
+  catch
+    Assert match(v:exception, "[CONF][vader_test][set.VALIDATOR]")
+  endtry
+
+  " Set a good setting
+  call conf#set_setting(config, 'test_area', 'test_number', 35)
+  AssertEqual 35, conf#get_setting(config, 'test_area', 'test_number')
+
+Execute (Bad setting configuration):
+  let config = {}
+  call conf#set_name(config, 'vader_test')
+  call conf#add_area(config, 'test_area')
+
+  " Default is a required item
+  try
+    call conf#add_setting(config, 'test_area', 'bad_1', {
+        \ 'type': v:t_string,
+        \ })
+    Assert v:false, "Add setting should have thrown an error"
+  catch
+    Assert match(v:exception, "'default' is a required key")
+  endtry
+
+  " Error when passing default dict with some important keys
+  " Can't tell if it's supposed to be default or config
+  try
+    call conf#add_setting(config, 'test_area', 'bad_2', {
+        \ 'key': 'val',
+        \ 'default': 'thing',
+        \ })
+    Assert v:false, "Add setting should have thrown an error"
+  catch
+    Assert match(v:exception, "CONF")
+    Assert match(v:exception, "default dict")
+  endtry
