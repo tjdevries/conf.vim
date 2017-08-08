@@ -154,6 +154,12 @@ defaults.wait_time                                    *Putty.defaults.wait_time*
 
   Wait time after sending a message through putty
 
+  To configure:
+    `call putty#configuration#set("defaults", "wait_time", <value>)`
+
+  To view:
+    `echo putty#configuration#get("defaults", "wait_time")`
+
 
 defaults.plink_location                          *Putty.defaults.plink_location*
 
@@ -164,10 +170,16 @@ defaults.plink_location                          *Putty.defaults.plink_location*
 
   Validator:
 >
-       function <lambda>13(val, ...)
+       function <lambda>14(val, ...)
     1  return executable(val)-
        endfunction
 <
+
+  To configure:
+    `call putty#configuration#set("defaults", "plink_location", <value>)`
+
+  To view:
+    `echo putty#configuration#get("defaults", "plink_location")`
 
 
 defaults.window_options                          *Putty.defaults.window_options*
@@ -176,4 +188,11 @@ defaults.window_options                          *Putty.defaults.window_options*
   Default: `{'concealcursor': 'n', 'filetype': 'lookitt'}`
 
   The window options associated with the putty window
+
+  To configure:
+    `call putty#configuration#set("defaults", "window_options", <value>)`
+
+  To view:
+    `echo putty#configuration#get("defaults", "window_options")`
+
 ```
