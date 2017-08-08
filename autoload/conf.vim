@@ -190,8 +190,9 @@ function! conf#set_setting(script, area, setting, value) abort
   if has_key(config_dict, 'type')
     if type(a:value) != config_dict.type
       " TODO: Get a better type message
-      throw printf("[CONF][%s][set.TYPE] Setting '%s.%s' requires type '%s'. Value '%s' is not of the correct type",
-            \ conf#get_name(a:script), a:area, a:setting, config_dict.type, a:value
+      redraw!
+      throw printf("[CONF][%s][set.TYPE] '%s.%s' requires a '%s'. Value '%s' is not the correct type",
+            \ conf#get_name(a:script), a:area, a:setting, conf#util#type_string(config_dict.type), a:value
             \ )
     endif
   endif
@@ -209,12 +210,39 @@ function! conf#set_setting(script, area, setting, value) abort
 endfunction
 
 function! conf#set_setting_prompt(script, area, setting) abort
-  let result = input(conf#setting#get_prompt(a:script, a:area, a:setting))
+  redraw!
+  let result = inputdialog(conf#setting#get_prompt(a:script, a:area, a:setting))
+  let setting_dict = a:script[s:config_key][a:area][a:setting]
 
   " Assume that you don't want empty value settings.
   " This lets you quit out of the menu if you make a mistake
   if result == ''
     return
+  endif
+
+  if has_key(setting_dict, 'type')
+    if setting_dict.type == v:t_dict
+      try
+        let result = json_decode(result)
+      catch
+        throw printf("[CONF][%s][PROMPT]: Value '%s' was not a valid json string",
+              \ conf#get_name(a:script), result)
+      endtry
+    elseif setting_dict.type == v:t_number
+      try
+        let result = str2nr(result)
+      catch
+        throw printf("[CONF][%s][PROMPT]: Value '%s' was not a valid Number",
+              \ conf#get_name(a:script), result)
+      endtry
+    elseif setting_dict.type == v:t_float
+      try
+        let result = str2float(result)
+      catch
+        throw printf("[CONF][%s][PROMPT]: Value '%s' was not a valid Float",
+              \ conf#get_name(a:script), result)
+      endtry
+    endif
   endif
 
   return conf#set_setting(a:script, a:area, a:setting, result)

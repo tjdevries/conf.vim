@@ -24,10 +24,17 @@ endfunction
 function! conf#setting#get_prompt(script, area, setting) abort
   let setting_dict = a:script[s:config_key][a:area][a:setting]
 
-  if has_key(setting_dict, 'prompt')
-    return setting_dict.prompt . ' >> '
+  let prompt = ''
+  if has_key(setting_dict, 'type')
+    if setting_dict.type == v:t_dict
+      let prompt = prompt . printf("'%s' is a dictionary. Enter results as a json string", a:setting) . "\n"
+    endif
   endif
 
-  return printf("> Set the value for '%s.%s.%s' [Default: %s] $ ",
+  if has_key(setting_dict, 'prompt')
+    return prompt . setting_dict.prompt . ' >> '
+  endif
+
+  return prompt . "\n" . printf("> Set the value for '%s.%s.%s' [Default: %s] $ ",
         \ conf#get_name(a:script), a:area, a:setting, string(setting_dict.default))
 endfunction
