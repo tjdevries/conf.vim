@@ -25,15 +25,70 @@ g:really_long_plugin_option_name_tijasdfk
 -------------------------------------------------------------------------------
 ```
 
-Me too :smile:
+Or even worse, you go to configure a plugin in your vimrc and you spend an hour debuggin... but you just spelled the option wrong :cry:
 
-Or even worse, you mispelled an option in your vimrc :cry:
+This plugin is here to fix all these problems and _so much more_.
 
-This plugin is here to fix it.
+## Overview
+
+This plugin is designed to be used by plugin developers to ensure "strong configuration" for your plugins. You should wrap the basic functions in this plugin in your own autoload functions for your plugin. I recommend using the script-local dictionary (`s:`) as your configuration dictionary because it fully encapsulates your plugin's configuration.
+
+The process is as follows:
+
+```vim
+call conf#set_name(s:, 'my_example_plugin')
+```
+
+Now whenever there is a configuration problem, it will use the name `my_example_plugin`.
+
+Then you will add a configuration "area" to your plugin. Consider this as a grouping of several settings together.
+
+```vim
+call conf#add_area(s:, 'mappings')
+call conf#add_area(s:, 'defaults')
+```
+
+After adding areas, you can add settings to each area.
+
+```vim
+call conf#add_setting(s:, 'mappings', 'my_plug_action', {
+  \ 'type': v:t_string,
+  \ 'default': '<leader>l',
+  \ })
+
+call conf#add_setting(s:, 'defaults', 'window_height', {
+  \ 'type': v:t_number,
+  \ 'default': 40,
+  \ 'validator': { val -> val < 200 },
+  \ })
+```
+
+After setting up the wrapper functions for your plugin (let's assume "example" is the plugin name), your users will use your configuration functions to set values. For example:
+
+```vim
+" This will work, and set the value to '<leader><leader>l'
+call example#configuration#set('mappings', 'my_plug_action', '<leader><leader>l')
+
+echo example#configuration#get('mappings', 'my_plug_action')
+" ==> <leader><leader>l
+
+
+" Works just fine! :)
+call example#configuration#set('defaults', 'window_height', 50)
+
+echo example#configuration#get('defaults', 'window_height')
+" ==> 50
+
+" This will not work, because if fails the "validator" key
+" You can find more information in the "## validation" sectoin
+call example#configuration#set('defaults', 'window_height', 250)
+" ==> throws an error [CONF][my_example_plugin] ...
+
+```
 
 ## Configuration and Setup
 
-Here's an example of a set up from another plugin of mine:
+Here's an example of a set up from another plugin of mine. It shows more of the wrapper functions:
 
 ```vim
 " in plugin "putty.vim"
@@ -78,7 +133,7 @@ function! putty#configuration#view() abort
 endfunction
 
 function! putty#configuration#menu() abort
-  return conf#menu(s:)
+  return conf#menu(s:, expand('<sfile>'))
 endfunction
 ```
 
@@ -204,3 +259,12 @@ defaults.window_options                          *Putty.defaults.window_options*
     `echo putty#configuration#get("defaults", "window_options")`
 
 ```
+
+
+### TODO:
+
+- More compelling README? :smile:
+- Generate wrapper functions automatically
+- More options for inputting items
+- Better errors for type problems
+- Better errors for function problems
