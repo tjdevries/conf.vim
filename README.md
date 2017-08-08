@@ -136,6 +136,14 @@ call example#configuaration#set('minimum', 'min_25', 20)
 
 This `validator` can be any function that takes one input (a value) and returns a boolean.
 
+## Menus
+
+It also makes menus for you! Thanks to `skywind3000/quickmenu.vim`. Here's an example:
+
+![image](https://user-images.githubusercontent.com/4466899/29073343-ec903fe6-7c10-11e7-83b1-627c233faa09.png)
+
+You can add custom prompts, configuration and validation for each item. And when you change it in one place, all your menus will update! :smile:
+
 ## Documentation
 
 Oh, and by the way... it can generate documentation. This is the output for my putty plugin. Just run `conf#docs#generate(s:)`.
