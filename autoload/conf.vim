@@ -36,6 +36,7 @@ let s:possible_settings = {
     \ },
   \ 'default': {-> v:true},
   \ 'description': {val -> type(val) == v:t_string},
+  \ 'prompt': {val -> type(val) == v:t_string},
   \ 'validator': {val -> type(val) == v:t_func},
   \ }
 
@@ -207,6 +208,18 @@ function! conf#set_setting(script, area, setting, value) abort
   let a:script[s:config_key][a:area][a:setting].value = a:value
 endfunction
 
+function! conf#set_setting_prompt(script, area, setting) abort
+  let result = input(conf#setting#get_prompt(a:script, a:area, a:setting))
+
+  " Assume that you don't want empty value settings.
+  " This lets you quit out of the menu if you make a mistake
+  if result == ''
+    return
+  endif
+
+  return conf#set_setting(a:script, a:area, a:setting, result)
+endfunction
+
 function! conf#get_setting(script, area, setting) abort
   call s:check_config_key(a:script)
 
@@ -253,6 +266,7 @@ function! conf#menu(script) abort
           \ )
   endif
 
+  let g:quickmenu_options = "HL"
   call quickmenu#reset()
 
   call quickmenu#header(printf('[%s] Configuration Menu', conf#get_name(a:script)))
@@ -263,10 +277,14 @@ function! conf#menu(script) abort
 
     for setting in keys(a:script[s:config_key][area])
       " Give the option of a setting for each item:
-      " TODO: Wait for an update to quickmenu to use function refs
       call quickmenu#append(
             \ printf('Set: %s.%s', area, setting),
-            \ printf('call conf#set_setting("%s", "%s", input("New Setting: "))', area, setting),
+            \ funcref('conf#set_setting_prompt', [
+                    \ a:script,
+                    \ area,
+                    \ setting,
+                    \ ]),
+            \ conf#setting#get_description(a:script, area, setting)
             \ )
     endfor
   endfor
