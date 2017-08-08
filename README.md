@@ -37,7 +37,7 @@ Here's an example of a set up from another plugin of mine:
 
 ```vim
 " in plugin "putty.vim"
-" file: autoload/putty/configuration.vim
+" file: plugin/putty.vim
 
 ""
 " Name of the plugin to be used in error messages
@@ -63,6 +63,8 @@ call conf#add_setting(s:, 'defaults', 'wait_time', {
         \ 'description': 'Wait time after sending a message through putty',
         \ })
 
+" in plugin: "putty.vim"
+" file: autoload/putty/configuration.vim
 function! putty#configuration#get(area, setting) abort
   call conf#get_setting(s:, a:area, a:setting)
 endfunction
