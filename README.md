@@ -133,3 +133,45 @@ call example#configuaration#set('minimum', 'min_25', 20)
 ```
 
 This `validator` can be any function that takes one input (a value) and returns a boolean.
+
+## Documentation
+
+Oh, and by the way... it can generate documentation. This is the output for my putty plugin. Just run `conf#docs#generate(s:)`.
+
+```
+================================================================================
+Configuration Options:                                           *Putty-options*
+
+defaults........................................................*Putty.defaults*
+
+
+defaults.wait_time                                    *Putty.defaults.wait_time*
+
+  Type: |String|
+  Default: `10m`
+
+  Wait time after sending a message through putty
+
+
+defaults.plink_location                          *Putty.defaults.plink_location*
+
+  Type: |String|
+  Default: `C:\Program Files (x86)\PuTTY\plink.exe`
+
+  Full path with executable name and extension
+
+  Validator:
+>
+       function <lambda>13(val, ...)
+    1  return executable(val)-
+       endfunction
+<
+
+
+defaults.window_options                          *Putty.defaults.window_options*
+
+  Type: |Dict|
+  Default: `{'concealcursor': 'n', 'filetype': 'lookitt'}`
+
+  The window options associated with the putty window
+```

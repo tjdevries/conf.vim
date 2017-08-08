@@ -273,25 +273,3 @@ function! conf#menu(script) abort
 
   call quickmenu#toggle(0)
 endfunction
-
-""
-" Make your documentation for yourself :)
-function! conf#doc(script) abort
-  let lines = []
-
-  let header_line = 'Configuration Options:'
-  let name = '*' . conf#get_name(a:script) . '-options*'
-  let spaces = repeat(' ', 80 - len(header_line) - len(name))
-  call add(lines, header_line . spaces . name)
-
-  for area in keys(a:script[s:config_key])
-    call add(lines, '')
-    call add(lines, '==> ' . area)
-
-    for setting in keys(a:script[s:config_key][area])
-      call add(lines, '  ' . setting)
-    endfor
-  endfor
-
-  return join(lines, "\n")
-endfunction
