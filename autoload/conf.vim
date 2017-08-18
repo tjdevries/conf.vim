@@ -1,4 +1,8 @@
 ""
+" TODO:
+"    - Check when we can just get / set the value without doing validation first using trys.
+
+""
 " s: dictionaries passed in will be of the form:
 " {
 "   <area_1>: {
@@ -249,31 +253,36 @@ function! conf#set_setting_prompt(script, area, setting) abort
 endfunction
 
 function! conf#get_setting(script, area, setting) abort
-  call s:check_config_key(a:script)
+  " Try to run the function.
+  " If we get an error, then handle that.
+  " This seems to be about twice as fast as running the validation first!
+  try
+    " If we've never set a new value,
+    "     return the default
+    " Else
+    "     return the value that has been set
+    if !has_key(a:script[s:config_key][a:area][a:setting], 'value')
+      return a:script[s:config_key][a:area][a:setting].default
+    else
+      return a:script[s:config_key][a:area][a:setting].value
+    endif
+  catch
+    call s:check_config_key(a:script)
 
-  if !s:has_config_area(a:script, a:area)
-    throw printf(
-          \ "[CONF][%s]: '%s' is not a valid area for a setting",
-          \ conf#get_name(a:script), a:area
-          \ )
-  endif
+    if !s:has_config_area(a:script, a:area)
+      throw printf(
+            \ "[CONF][%s]: '%s' is not a valid area for a setting",
+            \ conf#get_name(a:script), a:area
+            \ )
+    endif
 
-  if !has_key(a:script[s:config_key][a:area], a:setting)
-    throw printf(
-          \ "[CONF][%s]: '%s' is not a valid setting for area '%s'",
-          \ conf#get_name(a:script), a:setting, a:area
-          \ )
-  endif
-
-  " If we've never set a new value,
-  "     return the default
-  " Else
-  "     return the value that has been set
-  if !has_key(a:script[s:config_key][a:area][a:setting], 'value')
-    return a:script[s:config_key][a:area][a:setting].default
-  else
-    return a:script[s:config_key][a:area][a:setting].value
-  endif
+    if !has_key(a:script[s:config_key][a:area], a:setting)
+      throw printf(
+            \ "[CONF][%s]: '%s' is not a valid setting for area '%s'",
+            \ conf#get_name(a:script), a:setting, a:area
+            \ )
+    endif
+  endtry
 endfunction
 
 ""
