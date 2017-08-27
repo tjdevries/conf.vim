@@ -1,0 +1,116 @@
+*conf.txt*    Configuration meta-plugin for plugin authors.
+
+Author:  TJ DeVries
+License: MIT Licences
+
+==============================================================================
+INTRODUCTION                                                 *conf-introduction*
+
+*conf* or *conf.vim* is a plugin to configure your plugins! It will help avoid
+so many `g:my_plugin_var` and other configuration nightmares. It allows you to
+perform validation on the settings the user sets.
+
+It also includes many nice bonuses, inluding:
+
+- Automatic documentation generation
+- Automatic menu generation
+- Automatic configuration skeleton generation
+
+==============================================================================
+SETUP                                                               *conf-setup*
+
+1. Open a file in your plugin in the autoload/<plugin_name> directory.
+2. Let's call the file ./autoload/<plugin_name>/conf.vim
+3. Call the function `call conf#skeleton#append()`
+4. Add your own configuration items. See |conf-add_area| and |conf-add_setting|
+
+==============================================================================
+FUNCTIONS                                                       *conf-functions*
+
+{s:}: It is recommended to use the script dictionary to for configuration.
+This way you encapsulate your configuration from any other accesses. It is
+possible to use a different configuration dict, for example
+{g:plugin_configuration} but why would you use global variables when you're
+already using this plugin? ¯\_(ツ)_/¯
+
+                                                               *conf#set_name()*
+conf#set_name(s:, {name})
+    Set the {name} for your plugin.
+    This will be used in error messages, documentation and menus
+
+                                                               *conf#add_area()*
+conf#add_area(s:, {area})
+    Create a new configuration {area}.
+    Use a descriptive name to separate this area from other configuration. For
+    example "mappings" could be used as the area.
+
+                                                           *conf#add_setting()*
+conf#add_setting(s:, {area}, {setting}, {configuration})
+    Create a new {setting} within a configuration {area}.
+
+    Configuration is either:
+        1. The default value. This means there will be no validation, help
+        text or useful prompts. There are some restrictions on this value. It
+        is not recommended to set it to the default value.
+
+        2. A |conf_setting_configuration_dict|. The format is as follows:
+
+                                              *conf_setting_configuration_dict*
+        Keys:
+            <default>
+                The default value. This will be used if the user has not set a
+                new value using |conf#set_setting()|
+
+            <type>
+                The |type| of value allowed for this {setting}. Can be any of
+                |v:t_string|, |v:t_number|, etc.
+
+            <description>
+                A string containing information describing this setting. It
+                should explain the purpose of the setting. It will be used in
+                the documentation, and if a <prompt> is not provided, this
+                will be used.
+
+            <prompt>
+                A string helping the user to understand what to enter from a
+                menu or input.
+
+            <validator>
+                A function that takes a single argument, <val> and returns a
+                boolean. If |v:true|, that means it is an acceptable value for
+                that setting. If |v:false|, that means it was not an
+                acceptable value for that setting, and it will throw an error.
+
+                                                           *conf#set_setting()*
+conf#set_setting(s:, {area}, {setting}, {value})
+    Set an existing {setting} within an {area}. If the {area}.{setting}
+    combination has not been added with |conf#add_area()| and |conf#add_setting()|
+    then the function will throw an error.
+
+    It will also throw an error if {value} is not valid, as defined by the
+    |conf_setting_configuration_dict|.
+
+                                                           *conf#get_setting()*
+conf#get_setting(s:, {area}, {setting})
+    Retrieve an existing {setting} within an {area}. If the {area}.{setting}
+    combination has not been added with |conf#add_area()| and |conf#add_setting()|
+    then the function will throw an error.
+
+    This will return the <default> value if no value has been set by the user
+    using |conf#set_setting()|.
+
+                                                                  *conf#view()*
+conf#view(s:)
+    View the configuration dictionary for a script.
+    It returns a copy, so you can modify it however you like.
+
+                                                                  *conf#menu()*
+conf#menu(s:)
+    Open up a quickmenu for the script. 
+    Requires: https://github.com/skywind3000/quickmenu.vim
+
+    It will sort your {area}s and {setting}s. It will use the prompt and
+    description to give users information.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:

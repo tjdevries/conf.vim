@@ -21,6 +21,18 @@ let s:autoload_skeleton_names = {
         \ },
       \ }
 
+let s:doc_skeleton = {
+      \ 'docs#generate': {
+        \ 'name': 'generate_docs',
+        \ 'args': [],
+        \ 'conf_args': ['expand("<sfile>")'],
+        \ 'description': [
+          \ 'Returns a list of lines to be placed in your documentation', 
+          \ 'Can use :call append(line('%'), func())'
+          \ ],
+        \ },
+      \ }
+
 ""
 " Generate a skeleton for an a conf implementation in your current autoload file
 function! conf#skeleton#generate() abort
@@ -28,6 +40,23 @@ function! conf#skeleton#generate() abort
 
   let lines = []
 
+  call s:add_comment(lines, 'Set the name of name of your plugin.')
+  call s:add_comment(lines, 'Here is my best guess')
+  call add(lines, printf("call conf#set_name(s:, '%s')", conf#skeleton#get_plugin_name()))
+  call extend(lines, ['',''])
+
+  call s:add_comment(lines, 'Try adding a configuration area to your plugin, like so')
+  call add(lines, "call conf#add_area(s:, 'defaults')")
+
+  " TODO: Create better examples here
+  call extend(lines, ['',''])
+  call s:add_comment(lines, 'And then add some options')
+  call add(lines,
+        \ "call conf#add_setting(s:, 'defaults', 'map_key', {'default': '<leader>x', 'type': v:t_string})")
+  call add(lines,
+        \ "call conf#add_setting(s:, 'defaults', 'another_key', {'default': '<leader>a', 'type': v:t_string})")
+
+  call extend(lines, ['',''])
   for key in ['set_setting', 'get_setting', 'view', 'menu']
     call extend(lines, conf#skeleton#function_generate(
         \ autoload_prefix,
@@ -36,6 +65,14 @@ function! conf#skeleton#generate() abort
         \ ))
 
     call extend(lines, ['',''])
+  endfor
+
+  for key in keys(s:doc_skeleton)
+    call extend(lines, conf#skeleton#function_generate(
+          \ autoload_prefix,
+          \ key,
+          \ s:doc_skeleton[key]
+          \ ))
   endfor
 
   return lines
@@ -60,10 +97,12 @@ function! conf#skeleton#function_generate(prefix, conf_name, conf_dict) abort
         \ join(a:conf_dict.args, ', '),
         \ ))
 
+  let conf_args = get(a:conf_dict, 'conf_args', [])
+  let func_args = map(copy(a:conf_dict.args), { _, val -> 'a:' . val})
   call add(lines, printf('  return conf#%s(%s)',
         \ a:conf_name,
         \ join(
-          \ ['s:'] + map(copy(a:conf_dict.args), { _, val -> 'a:' . val}),
+          \ ['s:'] + conf_args + func_args,
           \ ', '
           \ )
         \ ))
@@ -82,10 +121,31 @@ endfunction
 " Gets the current autoload file prefix
 function! conf#skeleton#get_current_autoload_prefix() abort
   let prefix = expand('%:r')
-  let prefix = substitute(prefix, '.*autoload/', '', 'g')
   let prefix = substitute(prefix, "\\", '/', 'g')
   let prefix = substitute(prefix, '//', '/', 'g')
+  let prefix = substitute(prefix, '.*autoload/', '', 'g')
   let prefix = substitute(prefix, '/', '#', 'g')
 
   return prefix
+endfunction
+
+""
+" Get the guessed plugin name
+function! conf#skeleton#get_plugin_name() abort
+  let name = expand('%:p:r')
+  let name = substitute(name, 'autoload/.*', '', 'g')
+  let name = fnamemodify(name, ':h')
+  let name = fnamemodify(name, ':t')
+
+  return name
+endfunction
+
+""
+" Append the configuration
+function! conf#skeleton#append() abort
+  if has('nvim')
+    call nvim_buf_set_lines(0, -1, -1, v:false, conf#skeleton#generate())
+  else
+    call append(line('$'), conf#skeleton#generate())
+  endif
 endfunction

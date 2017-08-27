@@ -29,6 +29,25 @@ Or even worse, you go to configure a plugin in your vimrc and you spend an hour 
 
 This plugin is here to fix all these problems and _so much more_.
 
+## Asciinema example
+
+Here's a quick overview of what the plugin can do:
+
+- In ./plugin/example_plugin.vim
+  - Show old way of configuration
+  - Move to ./autoload/example_plugin/conf.vim
+- Show adding a generation of the file
+  - Paste in the configuration I've already made
+- Show adding areas and settings
+- Move to ./user/init.vim
+  - Show the errors from bad configuration
+  - Show setting good values
+  - Show a menu
+    - Show a failure entry
+    - Show a good entry
+  - Show the docs
+    - (make sure to do `:set ft=help`)
+
 ## Overview
 
 This plugin is designed to be used by plugin developers to ensure "strong configuration" for your plugins. You should wrap the basic functions in this plugin in your own autoload functions for your plugin. I recommend using the script-local dictionary (`s:`) as your configuration dictionary because it fully encapsulates your plugin's configuration.

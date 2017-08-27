@@ -66,7 +66,10 @@ function! s:has_config_setting(script, area, setting) abort
   call s:check_config_key(a:script)
 
   if !s:has_config_area(a:script, a:area)
-    return v:false
+    throw printf("[CONF][%s] Setting area named: '%s' does not exist",
+          \ conf#get_name(a:script),
+          \ a:area,
+          \ )
   endif
 
   return has_key(a:script[s:config_key][a:area], a:setting)
@@ -181,11 +184,14 @@ endfunction
 ""
 " Set a setting and ensure that is the correct value
 function! conf#set_setting(script, area, setting, value) abort
-  if !s:has_config_setting(a:script, a:area, a:setting)
-    throw printf("[CONF][%s] Setting area named: '%s' does not exist",
+  let has_setting = s:has_config_setting(a:script, a:area, a:setting)
+  if !has_setting
+    throw printf("[CONF][%s] Setting area named: '%s.%s' does not exist",
           \ conf#get_name(a:script),
           \ a:area,
+          \ a:setting,
           \ )
+    return
   endif
 
   let config_dict = a:script[s:config_key][a:area][a:setting]
@@ -193,20 +199,26 @@ function! conf#set_setting(script, area, setting, value) abort
   " Check for the correct type
   if has_key(config_dict, 'type')
     if type(a:value) != config_dict.type
-      " TODO: Get a better type message
       redraw!
       throw printf("[CONF][%s][set.TYPE] '%s.%s' requires a '%s'. Value '%s' is not the correct type",
             \ conf#get_name(a:script), a:area, a:setting, conf#util#type_string(config_dict.type), a:value
             \ )
+      return
     endif
   endif
 
+  " TODO: Throw an error here, but I want a multiline message :(
   if has_key(config_dict, 'validator')
     if !config_dict.validator(a:value)
-      " TODO: better error
-      throw printf("[CONF][%s][set.VALIDATOR] Setting '%s.%s' failed its validation function with val '%s'.",
+      echoerr printf("[CONF][%s][set.VALIDATOR] Setting '%s.%s' failed its validation function with val '%s'.",
             \ conf#get_name(a:script), a:area, a:setting, a:value
             \ )
+      if has_key(config_dict, 'description')
+       echoerr printf("[CONF][%s][set.VALIDATOR] Description: %s",
+             \ conf#get_name(a:script), config_dict.description)
+      endif
+
+      return
     endif
   endif
 
@@ -304,6 +316,7 @@ function! conf#menu(script) abort
   endif
 
   let g:quickmenu_options = "HL"
+  call quickmenu#current(conf#get_name(a:script))
   call quickmenu#reset()
 
   call quickmenu#header(printf('[%s] Configuration Menu', conf#get_name(a:script)))
@@ -326,5 +339,5 @@ function! conf#menu(script) abort
     endfor
   endfor
 
-  call quickmenu#toggle(0)
+  call quickmenu#toggle(conf#get_name(a:script))
 endfunction
