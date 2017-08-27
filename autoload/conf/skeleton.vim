@@ -25,9 +25,9 @@ let s:doc_skeleton = {
       \ 'docs#generate': {
         \ 'name': 'generate_docs',
         \ 'args': [],
-        \ 'conf_args': ['expand("<sfile>")'],
+        \ 'conf_args': ['s:autoload_prefix'],
         \ 'description': [
-          \ 'Returns a list of lines to be placed in your documentation', 
+          \ 'Returns a list of lines to be placed in your documentation',
           \ 'Can use :call append(line('%'), func())'
           \ ],
         \ },
@@ -39,6 +39,10 @@ function! conf#skeleton#generate() abort
   let autoload_prefix = conf#skeleton#get_current_autoload_prefix()
 
   let lines = []
+
+  call s:add_comment(lines, 'Prefix to use for this autoload file')
+  call add(lines, printf('let s:autoload_prefix = "%s"', autoload_prefix))
+  call add(lines, '')
 
   call s:add_comment(lines, 'Set the name of name of your plugin.')
   call s:add_comment(lines, 'Here is my best guess')
@@ -120,7 +124,7 @@ endfunction
 ""
 " Gets the current autoload file prefix
 function! conf#skeleton#get_current_autoload_prefix() abort
-  let prefix = expand('%:r')
+  let prefix = expand('%:p:r')
   let prefix = substitute(prefix, "\\", '/', 'g')
   let prefix = substitute(prefix, '//', '/', 'g')
   let prefix = substitute(prefix, '.*autoload/', '', 'g')

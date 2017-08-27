@@ -1,9 +1,11 @@
 let s:config_key = '__plugin_configuration'
 let s:text_width = 80
 
+" TODO: Fix this get/set functions
+
 ""
 " Make your documentation for yourself :)
-function! conf#docs#generate(script, autoload) abort
+function! conf#docs#generate(script, autoload_prefix) abort
   let lines = []
   call add(lines, repeat('=', s:text_width))
 
@@ -63,14 +65,15 @@ function! conf#docs#generate(script, autoload) abort
       endif
 
       " Show how to configure the values
-      let autoload_func = substitute(a:autoload, 'function', 'call', '')
-      let autoload_func = substitute(autoload_func, '#docs', '#set', '')
+      let checked_prefix = a:autoload_prefix[len(a:autoload_prefix) - 1] == '#' ?
+            \ a:autoload_prefix
+            \ : a:autoload_prefix . '#'
+      let autoload_func = printf('call %s%s', checked_prefix, 'set')
       call add(lines, '')
       call add(lines, '  To configure:')
       call add(lines, printf('    `%s("%s", "%s", <value>)`', autoload_func, area, setting))
 
-      let autoload_func = substitute(a:autoload, 'function', 'echo', '')
-      let autoload_func = substitute(autoload_func, '#docs', '#get', '')
+      let autoload_func = printf('call %s%s', checked_prefix, 'get')
       call add(lines, '')
       call add(lines, '  To view:')
       call add(lines, printf('    `%s("%s", "%s")`', autoload_func, area, setting))
