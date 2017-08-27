@@ -33,7 +33,7 @@ This plugin is here to fix all these problems and _so much more_.
 
 Here's a quick overview of what the plugin can do:
 
-![asciinema](https://asciinema.org/a/xbQmRxj0kXtrVn6zM18IKb0Kz)
+[![asciinema](https://asciinema.org/a/xbQmRxj0kXtrVn6zM18IKb0Kz.png)](https://asciinema.org/a/xbQmRxj0kXtrVn6zM18IKb0Kz?autoplay=1)
 
 - In ./plugin/example_plugin.vim
   - Show old way of configuration
