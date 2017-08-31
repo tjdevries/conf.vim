@@ -44,6 +44,10 @@ function! s:mapping_function(default, old_val, new_val) abort dict
     endif
   endif
 
+  if a:new_val == ''
+    return
+  endif
+
   " Map the new value
   call extend(self.map_config, {'lhs': a:new_val}, 'force')
   if conf#runtime#get('runtime', 'debug')
