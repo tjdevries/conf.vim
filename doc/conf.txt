@@ -81,6 +81,26 @@ conf#add_setting(s:, {area}, {setting}, {configuration})
                 that setting. If |v:false|, that means it was not an
                 acceptable value for that setting, and it will throw an error.
 
+            <action>
+                A function that takes two arguments.
+
+                {old_value}: The value that was previously set to this setting
+                    The function should handle {old_value} being |v:null|.
+                    This will occur the first time the <action> function is
+                    called. You can quit out of the function early if you
+                    don't want the action to run immediately after adding the
+                    setting.
+                {new_value}: The value that is being set to this setting
+                    This value will already have run through the <validator>
+                    and <type> code (if applicable).
+
+                The function does not have to return anything. The return
+                value will not be used
+
+                TODO: Write this
+                See |conf#actions#mapping()|
+
+
                                                            *conf#set_setting()*
 conf#set_setting(s:, {area}, {setting}, {value})
     Set an existing {setting} within an {area}. If the {area}.{setting}

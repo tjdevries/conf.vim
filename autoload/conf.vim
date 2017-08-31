@@ -42,6 +42,7 @@ let s:possible_settings = {
   \ 'description': {val -> type(val) == v:t_string},
   \ 'prompt': {val -> type(val) == v:t_string},
   \ 'validator': {val -> type(val) == v:t_func},
+  \ 'action': {val ->type(val) == v:t_func},
   \ }
 
 ""
@@ -178,6 +179,10 @@ function! conf#add_setting(script, area, setting, configuration) abort
     endif
   endfor
 
+  if has_key(config_dict, 'action')
+    call config_dict.action(v:null, config_dict.default)
+  endif
+
   let a:script[s:config_key][a:area][a:setting] = config_dict
 endfunction
 
@@ -220,6 +225,13 @@ function! conf#set_setting(script, area, setting, value) abort
 
       return
     endif
+  endif
+
+  if has_key(config_dict, 'action')
+    let old_value = conf#get_setting(a:script, a:area, a:setting)
+    let new_value = a:value
+
+    call config_dict.action(old_value, new_value)
   endif
 
   let a:script[s:config_key][a:area][a:setting].value = a:value

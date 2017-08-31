@@ -114,3 +114,19 @@ Execute (Bad setting configuration):
     Assert match(v:exception, "CONF")
     Assert match(v:exception, "default dict")
   endtry
+
+Execute (Testing "action" key):
+  let config = {}
+
+  call conf#set_name(config, 'vader_test')
+  call conf#add_area(config, 'test_action')
+
+  let g:test_action_var = 0
+  call conf#add_setting(config, 'test_action', 'set_global_var', {
+      \ 'default': v:false,
+      \ 'action': { old, new -> execute('let g:test_action_var = g:test_action_var + 1') },
+      \ })
+
+  AssertEqual g:test_action_var,1
+  call conf#set_setting(config, 'test_action', 'set_global_var', 5)
+  AssertEqual g:test_action_var,2
