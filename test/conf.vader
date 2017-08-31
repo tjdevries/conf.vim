@@ -124,7 +124,8 @@ Execute (Testing "action" key):
   let g:test_action_var = 0
   call conf#add_setting(config, 'test_action', 'set_global_var', {
       \ 'default': v:false,
-      \ 'action': { old, new -> execute('let g:test_action_var = g:test_action_var + 1') },
+      \ 'action': { def, old, new ->
+        \ execute('let g:test_action_var = g:test_action_var + 1') },
       \ })
 
   AssertEqual g:test_action_var,1

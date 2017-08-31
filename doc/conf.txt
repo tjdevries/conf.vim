@@ -82,7 +82,9 @@ conf#add_setting(s:, {area}, {setting}, {configuration})
                 acceptable value for that setting, and it will throw an error.
 
             <action>
-                A function that takes two arguments.
+                A function that takes three arguments.
+
+                {default}: The <default> value for this setting
 
                 {old_value}: The value that was previously set to this setting
                     The function should handle {old_value} being |v:null|.
@@ -97,7 +99,6 @@ conf#add_setting(s:, {area}, {setting}, {configuration})
                 The function does not have to return anything. The return
                 value will not be used
 
-                TODO: Write this
                 See |conf#actions#mapping()|
 
 
@@ -131,6 +132,25 @@ conf#menu(s:)
 
     It will sort your {area}s and {setting}s. It will use the prompt and
     description to give users information.
+
+
+==============================================================================
+ACTIONS                                                           *conf-actions*
+
+conf.vim defines some default actions to make your life much simpler.
+
+                                                        *conf#actions#mapping()*
+conf#actions#mapping({map_dic})
+    This is a function that returns a |funcref| to be used for the <action>
+    key in a |conf_setting_configuration_dict|.
+
+    It will automatically handle unmapping the old map (if it still applies to
+    the same |rhs|) and will automatically map the new setting for the user.
+
+    {map_dict} is a dictionary like the one returned from |maparg()|. See the
+    help for |maparg()| to see what the possible values can be. It will map
+    accordingly (i.e. If you specify `{..., "buffer": 1, ...}` the resulting
+    mapping will automatically use the |:map-<buffer>| modifier.
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:noet:fen:

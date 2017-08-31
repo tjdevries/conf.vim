@@ -29,6 +29,24 @@ Or even worse, you go to configure a plugin in your vimrc and you spend an hour 
 
 This plugin is here to fix all these problems and _so much more_.
 
+## Install
+
+```vim
+
+call plug#begin()
+
+" Required
+Plug 'tjdevries/standard.vim'
+" Optional: Used to make nice menus
+Plug 'skywind3000/quickmenu.vim'
+
+" Required: The plugin you're using so... you probably want it :)
+Plug 'tjdevries/conf.vim'
+
+call plug#end()
+
+```
+
 ## Asciinema example
 
 Here's a quick overview of what the plugin can do:

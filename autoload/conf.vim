@@ -174,13 +174,13 @@ function! conf#add_setting(script, area, setting, configuration) abort
     " Call the check to make sure it's of a valid type
     if !s:possible_settings[conf_key](config_dict[conf_key])
       throw printf(
-            \ "[CONF]: %s is not a valid setting value for %s."
+            \ "[CONF]: %s is not a valid setting value for %s.",
             \ config_dict[conf_key], conf_key)
     endif
   endfor
 
   if has_key(config_dict, 'action')
-    call config_dict.action(v:null, config_dict.default)
+    call config_dict.action(config_dict.default, v:null, config_dict.default)
   endif
 
   let a:script[s:config_key][a:area][a:setting] = config_dict
@@ -231,7 +231,7 @@ function! conf#set_setting(script, area, setting, value) abort
     let old_value = conf#get_setting(a:script, a:area, a:setting)
     let new_value = a:value
 
-    call config_dict.action(old_value, new_value)
+    call config_dict.action(config_dict.default, old_value, new_value)
   endif
 
   let a:script[s:config_key][a:area][a:setting].value = a:value

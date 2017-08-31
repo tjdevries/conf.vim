@@ -64,6 +64,21 @@ function! conf#docs#generate(script, autoload_prefix) abort
         call add(lines, '<')
       endif
 
+      " TODO: Should restructure this so that it's actually useful for
+      " mappings
+      if has_key(setting_dict, 'action')
+        call add(lines, '')
+        call add(lines, '  Action:')
+        call add(lines, '>')
+
+        let func_def = split(execute('function setting_dict.action'), "\n")
+        for func_line in func_def
+          call add(lines, '    ' . func_line)
+        endfor
+
+        call add(lines, '<')
+      endif
+
       " Show how to configure the values
       let checked_prefix = a:autoload_prefix[len(a:autoload_prefix) - 1] == '#' ?
             \ a:autoload_prefix
