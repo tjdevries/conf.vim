@@ -6,6 +6,10 @@ function! conf#__version() abort
   return std#semver#parse(s:conf_vim_version)
 endfunction
 
+if !exists('g:conf_vim')
+  runtime! plugin/conf.vim
+endif
+
 if g:conf_vim.unable_to_load
   finish
 endif
