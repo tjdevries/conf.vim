@@ -1,4 +1,16 @@
 ""
+" Import configuration values for conf.vim
+" A bit of dog fooding at times here
+let s:conf_vim_version = [0, 9, 0]
+function! conf#__version() abort
+  return std#semver#parse(s:conf_vim_version)
+endfunction
+
+if g:conf_vim.unable_to_load
+  finish
+endif
+
+""
 " TODO:
 "    - Check when we can just get / set the value without doing validation first using trys.
 
@@ -26,6 +38,7 @@
 
 let s:config_key = '__plugin_configuration'
 let s:config_name = '__plugin_name'
+let s:config_version = '__plugin_version'
 
 " Keys are:
 " type: must be a v:t_*
@@ -90,6 +103,35 @@ function! conf#get_name(script) abort
   endif
 
   return a:script[s:config_name]
+endfunction
+
+""
+" Set the version of the plugin
+function! conf#set_version(script, to_parse) abort
+  let semver = std#semver#parse(a:to_parse)
+
+  if empty(semver)
+    echoerr "[CONF] Not a valid semver version: " . string(a:to_parse)
+    return
+  endif
+
+  let a:script[s:config_version] = semver
+endfunction
+
+""
+" Get the version of the plugin
+function! conf#get_version(script) abort
+  if !has_key(a:script, s:config_version)
+    throw "[CONF] No version set for the plugin. Please call `conf#set_version(<semver version>)`"
+  endif
+
+  return a:script[s:config_version]
+endfunction
+
+""
+" Require a version of the plugin
+function! conf#require_version(script, version) abort
+  
 endfunction
 
 ""
