@@ -19,6 +19,11 @@ let s:autoload_skeleton_names = {
         \ 'args': [],
         \ 'description': ['Provide the user with an automatic "quickmenu"', 'See |conf.menu|'],
         \ },
+      \ 'get_version': {
+        \ 'name': 'version',
+        \ 'args': [],
+        \ 'description': ['Get the version for this plugin', 'Returns a semver dict']
+        \ },
       \ }
 
 let s:doc_skeleton = {
@@ -28,7 +33,15 @@ let s:doc_skeleton = {
         \ 'conf_args': ['s:autoload_prefix'],
         \ 'description': [
           \ 'Returns a list of lines to be placed in your documentation',
-          \ 'Can use :call append(line('%'), func())'
+          \ 'Can use :call append(line("%"), func())'
+          \ ],
+        \ },
+      \ 'docs#insert': {
+        \ 'name': 'insert_docs',
+        \ 'args': [],
+        \ 'conf_args': ['s:autoload_prefix'],
+        \ 'description': [
+          \ 'Insert the generated docs under where you cursor is',
           \ ],
         \ },
       \ }
@@ -42,26 +55,35 @@ function! conf#skeleton#generate() abort
 
   call s:add_comment(lines, 'Prefix to use for this autoload file')
   call add(lines, printf('let s:autoload_prefix = "%s"', autoload_prefix))
+  call add(lines, 'let s:autoload_file = expand("<sfile>:p")')
   call add(lines, '')
 
   call s:add_comment(lines, 'Set the name of name of your plugin.')
   call s:add_comment(lines, 'Here is my best guess')
   call add(lines, printf("call conf#set_name(s:, '%s')", conf#skeleton#get_plugin_name()))
-  call extend(lines, ['',''])
+  call add(lines, '')
+
+  call s:add_comment(lines, 'Set a version for your plugin.')
+  call s:add_comment(lines, "It should be valid semver string or ['major', 'minor', 'patch'] list")
+  call add(lines, "call conf#set_version(s:, [1, 0, 0])")
+  call add(lines, '')
 
   call s:add_comment(lines, 'Try adding a configuration area to your plugin, like so')
-  call add(lines, "call conf#add_area(s:, 'defaults')")
+  call add(lines, "\" call conf#add_area(s:, 'defaults')")
 
   " TODO: Create better examples here
   call extend(lines, ['',''])
   call s:add_comment(lines, 'And then add some options')
   call add(lines,
-        \ "call conf#add_setting(s:, 'defaults', 'map_key', {'default': '<leader>x', 'type': v:t_string})")
+        \ "\" call conf#add_setting(s:, 'defaults', 'map_key', {'default': '<leader>x', 'type': v:t_string})")
   call add(lines,
-        \ "call conf#add_setting(s:, 'defaults', 'another_key', {'default': '<leader>a', 'type': v:t_string})")
+        \ "\" call conf#add_setting(s:, 'defaults', 'another_key', {'default': '<leader>a', 'type': v:t_string})")
 
   call extend(lines, ['',''])
-  for key in ['set_setting', 'get_setting', 'view', 'menu']
+
+  " This is just to keep things sorted here
+  " Unfortunately you have to update this manually when you change s:autoload_skeleton_names
+  for key in ['set_setting', 'get_setting', 'view', 'menu', 'get_version']
     call extend(lines, conf#skeleton#function_generate(
         \ autoload_prefix,
         \ key,
@@ -71,12 +93,13 @@ function! conf#skeleton#generate() abort
     call extend(lines, ['',''])
   endfor
 
-  for key in keys(s:doc_skeleton)
+  for key in sort(keys(s:doc_skeleton))
     call extend(lines, conf#skeleton#function_generate(
           \ autoload_prefix,
           \ key,
           \ s:doc_skeleton[key]
           \ ))
+    call add(lines, '')
   endfor
 
   return lines

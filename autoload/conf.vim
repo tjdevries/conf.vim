@@ -399,3 +399,23 @@ function! conf#menu(script) abort
 
   call quickmenu#toggle(conf#get_name(a:script))
 endfunction
+
+""
+" Return a bunch of debug information
+" Should be useful for sam :)
+function! conf#debug(script) abort
+  let debug_buffer = std#window#temp()
+
+  call s:print_debug('Plugin name', conf#get_name(a:script))
+  call s:print_debug('Plugin version', conf#get_version(a:script))
+
+  if executable('git') && has_key(a:script, 'autoload_file')
+    " echo 'cding to ' . fnamemodify(a:script.autoload_file, ':h')
+    let hash = system('cd ' . fnamemodify(a:script.autoload_file, ':h') . ' && git rev-parse --verify HEAD --short')
+    call s:print_debug('Git Hash', hash)
+  endif
+endfunction
+
+function! s:print_debug(msg, value) abort
+  call append(line('$'), printf('%25s: %s', a:msg, a:value))
+endfunction

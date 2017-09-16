@@ -100,3 +100,9 @@ function! conf#docs#generate(script, autoload_prefix) abort
 
   return lines
 endfunction
+
+""
+" Inserts the docs under where your cursor is
+function! conf#docs#insert(script, autoload_prefix) abort
+  call append(line('.'), conf#docs#generate(a:script, a:autoload_prefix))
+endfunction
