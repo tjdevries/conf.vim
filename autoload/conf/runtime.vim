@@ -13,6 +13,11 @@ call conf#add_setting(s:, 'runtime', 'debug', {
             \ 'type': v:t_bool,
             \ 'description': 'If true, print debug messages during execution',
             \ })
+call conf#add_setting(s:, 'runtime', 'debug_buffer', {
+      \ 'default': v:true,
+      \ 'type': v:t_bool,
+      \ 'description': 'If true, put debug() into a new buffer',
+      \ })
 
 ""
 " conf#runtime#set

@@ -401,7 +401,9 @@ endfunction
 " Return a bunch of debug information
 " Should be useful for sam :)
 function! conf#debug(script) abort
-  " let debug_buffer = std#window#temp()
+  if conf#runtime#get('runtime', 'debug_buffer')
+    call std#window#temp()
+  endif
 
   call s:print_debug('Plugin name', conf#get_name(a:script))
   call s:print_debug('Plugin version', std#semver#string(conf#get_version(a:script)))
@@ -429,6 +431,11 @@ endfunction
 function! s:print_debug(msg, value, ...) abort
   let width = get(a:000, 0, 25)
   let separator = get(a:000, 1, ':')
-  " call append(line('$'), printf('%-25s: %s', a:msg, a:value))
-  echo printf('%-' . width . 's%s %s', a:msg, separator, a:value)
+
+  let message = printf('%-' . width . 's%s %s', a:msg, separator, a:value)
+  if conf#runtime#get('runtime', 'debug_buffer')
+    call append(line('$'), message)
+  else
+    echo message
+  endif
 endfunction
