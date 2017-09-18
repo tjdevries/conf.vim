@@ -38,44 +38,51 @@ function! conf#util#require_plugins(current_name, plug_dict) abort
   let valid = v:true
 
   " Let's best guess at the functions we need :)
-  for [name, semver] in items(a:plug_dict)
-    let function_options = split(execute(printf('function /%s#.*\(conf\|runtime\|info\).*#require', name)), "\n")
+  for [name, config] in items(a:plug_dict)
+    if type(config) == v:t_dict
+      let semver = get(config, 'require', '1.0.0')
+      let function_name = config.func
+    else
+      let semver = config
+      let function_options = split(execute(printf('function /%s#.*\(conf\|runtime\|info\).*#require', name)), "\n")
 
-    " We have some confusing options
-    if len(function_options) > 1
-      echohl ErrorMsg | echo  printf('[%s]: More than one possible requires function for: %s',
-            \ a:current_name,
-            \ name
-            \ ) | echohl None
-      let valid = v:false
-      continue
+      " We have some confusing options
+      if len(function_options) > 1
+        echohl ErrorMsg | echom  printf('[%s]: More than one possible requires function for: %s',
+              \ a:current_name,
+              \ name
+              \ ) | echohl None
+        let valid = v:false
+        continue
+      endif
+
+      " We've got no options :'(
+      if len(function_options) == 0
+        echohl ErrorMsg | echom printf('[%s]: No possible requires function for: %s',
+              \ a:current_name,
+              \ name
+              \ ) | echohl None
+        let valid = v:false
+        continue
+      endif
+
+      let val = function_options[0]
+      let function_name = matchlist(val, 'function \(.*\)(.*) \%[abort]')[1]
+      endif
+
+      if !function(function_name, [semver])()
+        echohl ErrorMsg | echom  printf('[%s]: Requirement "%s:%s" not met',
+              \ a:current_name,
+              \ name,
+              \ std#semver#string(std#semver#parse(semver))
+              \ ) | echohl None
+        let valid = v:false
+      endif
+    endfor
+
+    if !valid
+      echohl ErrorMsg | echom printf('[%s] Requirements not met', a:current_name) | echohl None
     endif
-
-    " We've got no options :'(
-    if len(function_options) == 0
-      echohl ErrorMsg | echo printf('[%s]: No possible requires function for: %s',
-            \ a:current_name,
-            \ name
-            \ ) | echohl None
-      let valid = v:false
-      continue
-    endif
-
-    let val = function_options[0]
-    let function_name = matchlist(val, 'function \(.*\)(.*) \%[abort]')[1]
-    if !function(function_name, [semver])()
-      echohl ErrorMsg | echo  printf('[%s]: Requirement "%s:%s" not met',
-            \ a:current_name,
-            \ name,
-            \ std#semver#string(std#semver#parse(semver))
-            \ ) | echohl None
-      let valid = v:false
-    endif
-  endfor
-
-  if !valid
-    echohl ErrorMsg | echo printf('[%s] Requirements not met', a:current_name) | echohl None
-  endif
 
   return valid
 endfunction

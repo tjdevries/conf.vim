@@ -424,6 +424,7 @@ function! conf#debug(script) abort
     endfor
   endfor
 
+  call s:print_debug('', '', 1, '')
   call s:print_debug('tjdevries/conf.vim', std#semver#string(conf#runtime#version()))
   call s:print_debug('tjdevries/standard.vim', std#semver#string(std#info#get_version()))
 endfunction
