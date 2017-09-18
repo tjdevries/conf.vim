@@ -15,6 +15,7 @@ It also includes many nice bonuses, inluding:
 - Automatic documentation generation
 - Automatic menu generation
 - Automatic configuration skeleton generation
+- Semantic Versioning hooks
 
 ==============================================================================
 SETUP                                                               *conf-setup*
@@ -132,6 +133,20 @@ conf#menu(s:)
 
     It will sort your {area}s and {setting}s. It will use the prompt and
     description to give users information.
+
+                                                           *conf#set_version()*
+conf#set_version(s:, {semver_version})
+    Takes a parseable string, list or dictionary that will parse into a semver
+    version. Use it to the set the version of a plugin.
+
+                                                           *conf#get_version()*
+conf#get_version(s:)
+    Get the version of the plugin.
+    Returns a dictionary: `{'major', 'minor', 'patch'}`
+
+                                                                 *conf#debug()*
+conf#debug(s:)
+    Print some really nice and helpful info to a temporary buffer.
 
 
 ==============================================================================

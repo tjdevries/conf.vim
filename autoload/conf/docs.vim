@@ -7,8 +7,9 @@ let s:text_width = 80
 " Make your documentation for yourself :)
 function! conf#docs#generate(script, autoload_prefix) abort
   let lines = []
-  call add(lines, repeat('=', s:text_width))
 
+  " {{{ Configuration Options
+  call add(lines, repeat('=', s:text_width))
   let header_line = 'Configuration Options:'
   let name = '*' . conf#get_name(a:script) . '-options*'
   let spaces = conf#util#filler([header_line, name], ' ', s:text_width)
@@ -96,8 +97,48 @@ function! conf#docs#generate(script, autoload_prefix) abort
   endfor
 
   call add(lines, '')
-  " call add(lines, ' vim:tw=78:ts=2:sts=2:sw=2:ft=help:norl:')
+  call add(lines, '') " }}}
+  " {{{ Configuration functions
+  call add(lines, repeat('=', s:text_width))
+  let header_line = 'Configuration Functions:'
+  let name = '*' . conf#get_name(a:script) . '-functions*'
+  let spaces = conf#util#filler([header_line, name], ' ', s:text_width)
+  call add(lines, header_line . spaces . name)
+  call add(lines, '')
 
+  " Just cache this function call
+  let introspective = conf#skeleton#__introspection()
+
+  " TODO: I can't seem to get this to sort correctly
+  let introspective_values = sort(values(introspective), { val1, val2 -> 
+        \ val1.name == val2.name ? 0
+        \ : val1.name > val2.name ? -1
+          \ : 1 })
+
+  for conf_func in split(execute('function /' . a:autoload_prefix), "\n")
+    let left = matchstr(conf_func, a:autoload_prefix . '.*)')
+    let right = '*' . matchstr(conf_func, a:autoload_prefix . '.*(') . '()*'
+    " Get the header of the line and define the tag
+    let spaces = conf#util#filler([right], ' ', s:text_width)
+
+    call add(lines, spaces . right)
+    call add(lines, left)
+
+    " If we've got a description, let's use it
+    let post_autoload = matchstr(conf_func, a:autoload_prefix . '\(.*\)(')[len(a:autoload_prefix) + 1:-2]
+    for info in introspective_values
+      if info.name == post_autoload
+        call extend(lines, map(copy(info.description), {idx, val -> '    ' . val}))
+        break
+      endif
+    endfor
+
+    call add(lines, '')
+  endfor
+  call add(lines, '')
+  call add(lines, '')
+  " }}}
+  call add(lines, ' vim:tw=78:ts=2:sts=2:sw=2:ft=help:norl:')
   return lines
 endfunction
 

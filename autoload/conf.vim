@@ -1,11 +1,3 @@
-""
-" Import configuration values for conf.vim
-" A bit of dog fooding at times here
-let s:conf_vim_version = [0, 9, 0]
-function! conf#__version() abort
-  return std#semver#parse(s:conf_vim_version)
-endfunction
-
 if !exists('g:conf_vim')
   runtime! plugin/conf.vim
 endif
@@ -135,7 +127,12 @@ endfunction
 ""
 " Require a version of the plugin
 function! conf#require_version(script, version) abort
-  
+  let semver_obj = std#semver#parse(a:version)
+
+  return std#semver#is(
+        \ conf#get_version(a:script),
+        \ '>=',
+        \ semver_obj)
 endfunction
 
 ""
@@ -404,18 +401,34 @@ endfunction
 " Return a bunch of debug information
 " Should be useful for sam :)
 function! conf#debug(script) abort
-  let debug_buffer = std#window#temp()
+  " let debug_buffer = std#window#temp()
 
   call s:print_debug('Plugin name', conf#get_name(a:script))
-  call s:print_debug('Plugin version', conf#get_version(a:script))
+  call s:print_debug('Plugin version', std#semver#string(conf#get_version(a:script)))
 
   if executable('git') && has_key(a:script, 'autoload_file')
     " echo 'cding to ' . fnamemodify(a:script.autoload_file, ':h')
-    let hash = system('cd ' . fnamemodify(a:script.autoload_file, ':h') . ' && git rev-parse --verify HEAD --short')
+    let hash = split(system('cd '
+          \ . fnamemodify(a:script.autoload_file, ':h')
+          \ . ' && git rev-parse --verify HEAD --short'))[0]
     call s:print_debug('Git Hash', hash)
   endif
+
+  call s:print_debug('Configuration values', '')
+  for area in keys(a:script[s:config_key])
+    call s:print_debug(printf('  %s', area), '', 25, '')
+    for setting in keys(a:script[s:config_key][area])
+      call s:print_debug(printf('    %s.%s', area, setting), conf#get_setting(a:script, area, setting), 40, '==>')
+    endfor
+  endfor
+
+  call s:print_debug('tjdevries/conf.vim', std#semver#string(conf#runtime#version()))
+  call s:print_debug('tjdevries/standard.vim', std#semver#string(std#info#get_version()))
 endfunction
 
-function! s:print_debug(msg, value) abort
-  call append(line('$'), printf('%25s: %s', a:msg, a:value))
+function! s:print_debug(msg, value, ...) abort
+  let width = get(a:000, 0, 25)
+  let separator = get(a:000, 1, ':')
+  " call append(line('$'), printf('%-25s: %s', a:msg, a:value))
+  echo printf('%-' . width . 's%s %s', a:msg, separator, a:value)
 endfunction

@@ -24,6 +24,19 @@ let s:autoload_skeleton_names = {
         \ 'args': [],
         \ 'description': ['Get the version for this plugin', 'Returns a semver dict']
         \ },
+      \ 'require_version': {
+        \ 'name': 'require',
+        \ 'args': ['semver'],
+        \ 'description': ['Require a version of this plugin.', 'Returns false if not a high enough version'],
+        \ },
+      \ 'debug': {
+        \ 'name': 'debug',
+        \ 'args': [],
+        \ 'description': [
+          \ 'Print a debug statement containing information about the plugin',
+          \ 'and the versions of required plugins',
+          \ ],
+        \ },
       \ }
 
 let s:doc_skeleton = {
@@ -83,7 +96,7 @@ function! conf#skeleton#generate() abort
 
   " This is just to keep things sorted here
   " Unfortunately you have to update this manually when you change s:autoload_skeleton_names
-  for key in ['set_setting', 'get_setting', 'view', 'menu', 'get_version']
+  for key in ['set_setting', 'get_setting', 'view', 'menu', 'get_version', 'require_version', 'debug']
     call extend(lines, conf#skeleton#function_generate(
         \ autoload_prefix,
         \ key,
@@ -175,4 +188,14 @@ function! conf#skeleton#append() abort
   else
     call append(line('$'), conf#skeleton#generate())
   endif
+endfunction
+
+""
+" Get the nice helpers things
+function! conf#skeleton#__introspection() abort
+  let d = {}
+  call extend(d, s:autoload_skeleton_names)
+  call extend(d, s:doc_skeleton)
+
+  return d
 endfunction
