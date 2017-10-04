@@ -9,9 +9,20 @@ function! conf#actions#mapping(map_dict) abort
     return
   endif
 
+  let ft_specific = type(get(dict.map_config, 'buffer', v:false)) == v:t_list
+
+  let dict.action_config = {
+        \ 'filetypes': ft_specific
+            \ ? dict.map_config.buffer
+            \ : [],
+        \ }
+
   let dict = {}
   let dict.map_config = copy(a:map_dict)
   let dict.map_config['noremap'] = get(dict.map_config, 'noremap', v:true)
+  let dict.map_config['buffer'] = ft_specific
+        \ ? v:true
+        \ : get(dict.map_config, 'buffer', v:false)
 
   let dict.result = funcref('s:mapping_function')
   return { def, old, new -> dict.result(def, old, new) }
