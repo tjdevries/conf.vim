@@ -8,6 +8,8 @@ function! conf#actions#mapping(map_dict) abort
     echoerr 'conf#actions#mapping requires a dictionary with "rhs" and "mode"' . string(a:map_dict)
     return
   endif
+  let dict = {}
+  let dict.map_config = copy(a:map_dict)
 
   let ft_specific = type(get(dict.map_config, 'buffer', v:false)) == v:t_list
 
@@ -17,8 +19,6 @@ function! conf#actions#mapping(map_dict) abort
             \ : [],
         \ }
 
-  let dict = {}
-  let dict.map_config = copy(a:map_dict)
   let dict.map_config['noremap'] = get(dict.map_config, 'noremap', v:true)
   let dict.map_config['buffer'] = ft_specific
         \ ? v:true
